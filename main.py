@@ -1,5 +1,4 @@
 import annoy
-#from ann_benchmarks.algorithms.base import BaseANN
 import psutil
 import numpy as np
 from collections import Counter
