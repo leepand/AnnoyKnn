@@ -40,7 +40,7 @@ class Annoy(BaseANN):
 
     def query(self, v, n):
         return self._annoy.get_nns_by_vector(v, n, self._search_k,include_distances=True)
-    def predict(self,X_test, y_train, k,threshold=0.8):
+    def kNearestNeighbor(self,X_test, y_train, k,threshold=0.8):
         # create list for distances and targets
         #y_train list的顺序与X_train row_index 一一对应
         distances = []
