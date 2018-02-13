@@ -40,27 +40,36 @@ class Annoy(BaseANN):
 
     def query(self, v, n):
         return self._annoy.get_nns_by_vector(v, n, self._search_k,include_distances=True)
-    def predict(self,X_test, y_train, k):
+    def predict(self,X_test, y_train, k,threshold=0.8):
         # create list for distances and targets
         #y_train list的顺序与X_train row_index 一一对应
         distances = []
         targets = []
-
+        cosine_list=[]
+        cl=[]
         # sort the list
         item,distances = self.query(x, 10)
-
-        # make a list of the k neighbors' targets
+        '''return [(item1,cosin1),(item2,cosin2)...]'''
+        neighbours_cosine_distances=zip(item, 1 - (np.array(distances) ** 2) / 2)
+        '''make a list of the k neighbors' targets'''
         for i in range(k):
             index = item[i]
-            #print(y_train[index])
+            cosine_dist=1-(distances[i]**2)/2.0#sqrt(2(1-cos(u,v)))
+            if cosine_dist<threshold:
+                continue
             targets.append(y_train[index])
-        top_item=Counter(targets).most_common(2)
+            #print cosine_dist
+            cosine_list.append(cosine_dist)
+            cl.append(neighbours_cosine_distances[i])
+        if len(targets)<1:
+            return None
+        top_item=Counter(targets).most_common(1)
         if  top_item[0][1] <2:
             top1=targets[0]
         else:
-            top1=Counter(targets).most_common(2)[0][0]
+            top1=Counter(targets).most_common(1)[0][0]
         # return most common target
-        return Counter(targets).most_common(2),targets,'top1:',top1#[0][0]
+        return top1#Counter(targets).most_common(1),targets,'top1:',top1,cosine_list,cl#[0][0]
 x = [random.gauss(0, 1) for z in xrange(100)]
 l = [ i for i in range(100)]
 metric, n_trees, search_k='angular',40,10
@@ -68,4 +77,4 @@ uu=Annoy(metric, n_trees, search_k)
 print type(v)
 uu.fit(10,100)
 uu.query(x,10)
-print uu.query(x,10),uu.predict(v,l,3)
+print uu.query(x,10),uu.predict(v,l,3,threshold=0.2)
